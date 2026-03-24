@@ -4,180 +4,95 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Produto</title>
-
 <style>
-body{font-family:Arial;margin:0;background:#fff;}
+body{font-family:Arial;margin:0;padding:15px;}
 
-.img{
-  width:100%;
-  height:220px;
-  object-fit:cover;
-}
+.add{display:flex;justify-content:space-between;margin:10px 0;}
 
-.container{
-  padding:15px;
-  padding-bottom:120px;
-}
-
-.add-item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:10px 0;
-}
-
-.controle{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
-.footer{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  background:#fff;
-  padding:10px;
-}
-
-.btn{
-  width:100%;
-  padding:15px;
-  background:#25D366;
-  color:white;
-  border:none;
-  border-radius:10px;
-  font-size:16px;
-}
+.btn{width:100%;padding:15px;background:#25D366;color:#fff;border:none;}
 </style>
 </head>
 
 <body>
 
-<img id="img" class="img">
-
-<div class="container">
-
 <h2 id="nome"></h2>
 <p id="desc"></p>
-
 <h3 id="preco"></h3>
-
-<h4>Adicionais</h4>
 
 <div id="extras"></div>
 
-<input id="obs" placeholder="Observação" style="width:100%;padding:10px;margin-top:10px">
+<input id="obs" placeholder="Observação" style="width:100%;padding:10px">
 
-<div style="margin-top:10px;">
+<div>
 <button onclick="menos()">-</button>
 <span id="qtd">1</span>
 <button onclick="mais()">+</button>
 </div>
 
-</div>
-
-<div class="footer">
-<button class="btn" onclick="add()">Adicionar ao carrinho</button>
-</div>
+<button class="btn" onclick="add()">Adicionar</button>
 
 <script>
-let p = JSON.parse(localStorage.getItem("produtoSelecionado"));
+let p=JSON.parse(localStorage.getItem("produtoSelecionado"));
+let qtd=1;
 
-let qtd = 1;
-
-// ADICIONAIS
-let adicionais = [
- {nome:"Bacon", preco:2, qtd:0},
- {nome:"Calabresa", preco:2, qtd:0},
- {nome:"Ovo de codorna", preco:2, qtd:0},
- {nome:"Torrada", preco:2, qtd:0},
- {nome:"Mussarela", preco:3, qtd:0}
+let adicionais=[
+{nome:"Bacon",preco:2,qtd:0},
+{nome:"Calabresa",preco:2,qtd:0}
 ];
 
-document.getElementById("img").src = p.imagem;
-document.getElementById("nome").innerText = p.nome;
-document.getElementById("desc").innerText = p.descricao;
+nome.innerText=p.nome;
+desc.innerText=p.descricao;
 
-// RENDER EXTRAS
 function renderExtras(){
-  let html = "";
-  adicionais.forEach((a,i)=>{
-    html += `
-      <div class="add-item">
-        <div>
-          ${a.nome} <br>
-          + R$ ${a.preco.toFixed(2).replace(".",",")}
-        </div>
-        <div class="controle">
-          <button onclick="menosAdd(${i})">-</button>
-          <span>${a.qtd}</span>
-          <button onclick="maisAdd(${i})">+</button>
-        </div>
-      </div>
-    `;
-  });
-  document.getElementById("extras").innerHTML = html;
+let html="";
+adicionais.forEach((a,i)=>{
+html+=`
+<div class="add">
+${a.nome} (+${a.preco})
+<div>
+<button onclick="menosAdd(${i})">-</button>
+${a.qtd}
+<button onclick="maisAdd(${i})">+</button>
+</div>
+</div>`;
+});
+extras.innerHTML=html;
 }
 
-function totalExtras(){
-  return adicionais.reduce((t,a)=>t+(a.preco*a.qtd),0);
+function total(){
+let t=p.preco;
+adicionais.forEach(a=>t+=a.preco*a.qtd);
+return t*qtd;
 }
 
 function atualizar(){
-  let total = (p.preco + totalExtras()) * qtd;
-  document.getElementById("preco").innerText =
-    "R$ " + total.toFixed(2).replace(".",",");
+preco.innerText="R$ "+total().toFixed(2);
 }
 
-// CONTROLE PRINCIPAL
-function mais(){
-  qtd++;
-  document.getElementById("qtd").innerText = qtd;
-  atualizar();
+function mais(){qtd++;qtdSpan()}
+function menos(){if(qtd>1)qtd--;qtdSpan()}
+
+function qtdSpan(){
+document.getElementById("qtd").innerText=qtd;
+atualizar();
 }
 
-function menos(){
-  if(qtd>1){
-    qtd--;
-    document.getElementById("qtd").innerText = qtd;
-    atualizar();
-  }
-}
+function maisAdd(i){adicionais[i].qtd++;renderExtras();atualizar();}
+function menosAdd(i){if(adicionais[i].qtd>0)adicionais[i].qtd--;renderExtras();atualizar();}
 
-// CONTROLE ADICIONAIS
-function maisAdd(i){
-  adicionais[i].qtd++;
-  renderExtras();
-  atualizar();
-}
-
-function menosAdd(i){
-  if(adicionais[i].qtd>0){
-    adicionais[i].qtd--;
-    renderExtras();
-    atualizar();
-  }
-}
-
-// ADICIONAR AO CARRINHO
 function add(){
-  let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+let carrinho=JSON.parse(localStorage.getItem("carrinho"))||[];
 
-  let extrasSelecionados = adicionais.filter(a=>a.qtd>0);
+carrinho.push({
+nome:p.nome,
+qtd:qtd,
+preco:p.preco,
+adicionais:adicionais,
+obs:obs.value
+});
 
-  carrinho.push({
-    nome: p.nome,
-    qtd: qtd,
-    preco: p.preco,
-    adicionais: extrasSelecionados,
-    obs: document.getElementById("obs").value
-  });
-
-  localStorage.setItem("carrinho", JSON.stringify(carrinho));
-
-  location.href = "carrinho.html";
+localStorage.setItem("carrinho",JSON.stringify(carrinho));
+location.href="carrinho.html";
 }
 
 renderExtras();
