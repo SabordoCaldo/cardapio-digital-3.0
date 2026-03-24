@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:Arial;padding:10px;}
+.btn{width:100%;padding:15px;background:green;color:white;border:none;}
+</style>
+</head>
+
+<body>
+
+<h2>Carrinho</h2>
+
+<div id="lista"></div>
+
+<p>Total: R$ <span id="total"></span></p>
+
+<input id="nome" placeholder="Nome"><br>
+<input id="end" placeholder="Endereço"><br>
+<input id="tel" placeholder="Telefone"><br>
+
+<button class="btn" onclick="enviar()">Enviar WhatsApp</button>
+<button onclick="limpar()">Limpar</button>
+
+<script>
+function render(){
+let c=JSON.parse(localStorage.getItem("carrinho"))||[];
+let lista=document.getElementById("lista");
+lista.innerHTML="";
+
+let total=0;
+
+c.forEach(i=>{
+total+=i.preco*i.qtd;
+
+lista.innerHTML+=`
+<p>${i.qtd} ${i.nome}<br>
+R$ ${(i.preco*i.qtd).toFixed(2).replace(".",",")}</p>
+`;
+});
+
+document.getElementById("total").innerText=total.toFixed(2);
+}
+
+function limpar(){
+localStorage.removeItem("carrinho");
+render();
+}
+
+function enviar(){
+let c=JSON.parse(localStorage.getItem("carrinho"))||[];
+let total=0;
+let txt="Sabor do Caldo\nPedido 0001\n\n";
+
+c.forEach(i=>{
+total+=i.preco*i.qtd;
+txt+=`${i.qtd} ${i.nome}\nR$ ${(i.preco*i.qtd).toFixed(2)}\n`;
+});
+
+txt+=`\nTotal: ${total}\n\n`;
+txt+=`Nome: ${nome.value}\n`;
+txt+=`Endereço: ${end.value}\n`;
+txt+=`Telefone: ${tel.value}`;
+
+window.open("https://wa.me/?text="+encodeURIComponent(txt));
+}
+
+render();
+</script>
+
+</body>
+</html>
