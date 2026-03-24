@@ -11,13 +11,8 @@
 <meta name="theme-color" content="#d32f2f">
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#fff;
-}
+body{margin:0;font-family:Arial;background:#fff;}
 
-/* HEADER */
 .header{
   background:#d32f2f;
   color:white;
@@ -25,117 +20,63 @@ body{
 }
 
 .logo{
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  background:#fff;
-  margin-bottom:10px;
+  width:60px;height:60px;border-radius:50%;background:white;margin-bottom:10px;
 }
 
-.header h2{
-  margin:0;
-}
-
-.info{
-  font-size:13px;
-}
-
-/* CATEGORIAS */
 .categorias{
-  display:flex;
-  overflow-x:auto;
-  gap:10px;
-  padding:10px;
-  border-bottom:1px solid #eee;
+  display:flex;overflow-x:auto;gap:10px;padding:10px;
 }
 
 .cat{
-  padding:8px 15px;
-  background:#eee;
-  border-radius:20px;
-  white-space:nowrap;
-  cursor:pointer;
+  padding:8px 15px;background:#eee;border-radius:20px;
 }
 
-.cat.ativo{
-  background:#d32f2f;
-  color:white;
-}
+.cat.ativo{background:#d32f2f;color:white;}
 
-/* LISTA */
-.lista{
-  padding:10px;
-}
+.lista{padding:10px;}
 
-/* CARD */
 .card{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:15px;
-  cursor:pointer;
+  display:flex;justify-content:space-between;
+  margin-bottom:15px;cursor:pointer;
 }
 
 .card img{
-  width:90px;
-  height:90px;
-  border-radius:10px;
+  width:90px;height:90px;border-radius:10px;
 }
 
-/* CARRINHO */
 .carrinho{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:black;
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position:fixed;bottom:20px;right:20px;
+  width:60px;height:60px;border-radius:50%;
+  background:black;color:white;
+  display:flex;align-items:center;justify-content:center;
 }
 
 .badge{
-  position:absolute;
-  top:0;
-  right:0;
-  background:red;
-  color:white;
-  font-size:12px;
-  padding:3px 6px;
-  border-radius:50%;
+  position:absolute;top:0;right:0;
+  background:red;color:white;font-size:12px;
+  border-radius:50%;padding:3px 6px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="logo"></div>
   <h2>Sabor do Caldo</h2>
-  <div class="info">
-    Cardápio<br>
-    CNPJ 61.986.117/0001-80<br>
-    Quinta a Domingo - 19h às 23h
-  </div>
+  <p>Quinta a Domingo - 19h às 23h</p>
 </div>
 
-<!-- CATEGORIAS -->
 <div class="categorias">
-  <div class="cat ativo" onclick="trocar('todos', this)">Ofertas</div>
+  <div class="cat ativo" onclick="trocar('promo', this)">Ofertas</div>
   <div class="cat" onclick="trocar('caldos', this)">Caldos</div>
   <div class="cat" onclick="trocar('bebidas', this)">Bebidas</div>
 </div>
 
-<!-- LISTA -->
-<div class="lista" id="lista"></div>
+<div id="lista" class="lista"></div>
 
-<!-- BOTÃO CARRINHO -->
 <div class="carrinho" onclick="irCarrinho()">
-  🛒
-  <div class="badge" id="contador">0</div>
+🛒 <div class="badge" id="cont">0</div>
 </div>
 
 <script src="caldos.js"></script>
@@ -143,34 +84,31 @@ body{
 <script src="promocoes.js"></script>
 
 <script>
-let categoria = "todos";
+let categoria="promo";
 
-function trocar(cat, el){
-  categoria = cat;
-
+function trocar(cat,el){
+  categoria=cat;
   document.querySelectorAll(".cat").forEach(c=>c.classList.remove("ativo"));
   el.classList.add("ativo");
-
   render();
 }
 
 function abrirProduto(item){
   localStorage.setItem("produtoSelecionado", JSON.stringify(item));
-  window.location.href = "produto.html";
+  location.href="produto.html";
 }
 
 function render(){
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
+  let lista=document.getElementById("lista");
+  lista.innerHTML="";
 
-  let dados = [];
-
-  if(categoria==="todos") dados = promocoes;
-  if(categoria==="caldos") dados = caldos;
-  if(categoria==="bebidas") dados = bebidas;
+  let dados=[];
+  if(categoria==="promo") dados=promocoes;
+  if(categoria==="caldos") dados=caldos;
+  if(categoria==="bebidas") dados=bebidas;
 
   dados.forEach(item=>{
-    lista.innerHTML += `
+    lista.innerHTML+=`
       <div class="card" onclick='abrirProduto(${JSON.stringify(item)})'>
         <div>
           <h3>${item.nome}</h3>
@@ -183,20 +121,16 @@ function render(){
   });
 }
 
-function atualizarCarrinho(){
-  let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-
-  let total = carrinho.reduce((acc,i)=>acc+i.qtd,0);
-
-  document.getElementById("contador").innerText = total;
+function atualizar(){
+  let c=JSON.parse(localStorage.getItem("carrinho"))||[];
+  let total=c.reduce((a,i)=>a+i.qtd,0);
+  document.getElementById("cont").innerText=total;
 }
 
-function irCarrinho(){
-  window.location.href = "carrinho.html";
-}
+function irCarrinho(){location.href="carrinho.html";}
 
 render();
-atualizarCarrinho();
+atualizar();
 </script>
 
 </body>
