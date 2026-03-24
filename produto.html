@@ -4,12 +4,52 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Produto</title>
+
 <style>
 body{font-family:Arial;margin:0;background:#fff;}
-.img{width:100%;height:220px;object-fit:cover;}
-.container{padding:15px;padding-bottom:120px;}
-.footer{position:fixed;bottom:0;width:100%;background:#fff;padding:10px;}
-.btn{width:100%;padding:15px;background:#25D366;color:white;border:none;border-radius:10px;}
+
+.img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+}
+
+.container{
+  padding:15px;
+  padding-bottom:120px;
+}
+
+.add-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:10px 0;
+}
+
+.controle{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.footer{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:#fff;
+  padding:10px;
+}
+
+.btn{
+  width:100%;
+  padding:15px;
+  background:#25D366;
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+}
 </style>
 </head>
 
@@ -18,15 +58,19 @@ body{font-family:Arial;margin:0;background:#fff;}
 <img id="img" class="img">
 
 <div class="container">
+
 <h2 id="nome"></h2>
 <p id="desc"></p>
-<div id="preco"></div>
+
+<h3 id="preco"></h3>
+
+<h4>Adicionais</h4>
 
 <div id="extras"></div>
 
 <input id="obs" placeholder="Observação" style="width:100%;padding:10px;margin-top:10px">
 
-<div>
+<div style="margin-top:10px;">
 <button onclick="menos()">-</button>
 <span id="qtd">1</span>
 <button onclick="mais()">+</button>
@@ -35,44 +79,108 @@ body{font-family:Arial;margin:0;background:#fff;}
 </div>
 
 <div class="footer">
-<button class="btn" onclick="add()">Adicionar</button>
+<button class="btn" onclick="add()">Adicionar ao carrinho</button>
 </div>
 
 <script>
-let p=JSON.parse(localStorage.getItem("produtoSelecionado"));
-let qtd=1;
-let total=p.preco;
+let p = JSON.parse(localStorage.getItem("produtoSelecionado"));
 
-img.src=p.imagem;
-nome.innerText=p.nome;
-desc.innerText=p.descricao;
+let qtd = 1;
+
+// ADICIONAIS
+let adicionais = [
+ {nome:"Bacon", preco:2, qtd:0},
+ {nome:"Calabresa", preco:2, qtd:0},
+ {nome:"Ovo de codorna", preco:2, qtd:0},
+ {nome:"Torrada", preco:2, qtd:0},
+ {nome:"Mussarela", preco:3, qtd:0}
+];
+
+document.getElementById("img").src = p.imagem;
+document.getElementById("nome").innerText = p.nome;
+document.getElementById("desc").innerText = p.descricao;
+
+// RENDER EXTRAS
+function renderExtras(){
+  let html = "";
+  adicionais.forEach((a,i)=>{
+    html += `
+      <div class="add-item">
+        <div>
+          ${a.nome} <br>
+          + R$ ${a.preco.toFixed(2).replace(".",",")}
+        </div>
+        <div class="controle">
+          <button onclick="menosAdd(${i})">-</button>
+          <span>${a.qtd}</span>
+          <button onclick="maisAdd(${i})">+</button>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById("extras").innerHTML = html;
+}
+
+function totalExtras(){
+  return adicionais.reduce((t,a)=>t+(a.preco*a.qtd),0);
+}
 
 function atualizar(){
-preco.innerText="R$ "+(total*qtd).toFixed(2).replace(".",",");
+  let total = (p.preco + totalExtras()) * qtd;
+  document.getElementById("preco").innerText =
+    "R$ " + total.toFixed(2).replace(".",",");
 }
 
+// CONTROLE PRINCIPAL
+function mais(){
+  qtd++;
+  document.getElementById("qtd").innerText = qtd;
+  atualizar();
+}
+
+function menos(){
+  if(qtd>1){
+    qtd--;
+    document.getElementById("qtd").innerText = qtd;
+    atualizar();
+  }
+}
+
+// CONTROLE ADICIONAIS
+function maisAdd(i){
+  adicionais[i].qtd++;
+  renderExtras();
+  atualizar();
+}
+
+function menosAdd(i){
+  if(adicionais[i].qtd>0){
+    adicionais[i].qtd--;
+    renderExtras();
+    atualizar();
+  }
+}
+
+// ADICIONAR AO CARRINHO
 function add(){
-let carrinho=JSON.parse(localStorage.getItem("carrinho"))||[];
+  let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
-carrinho.push({
-nome:p.nome,
-qtd:qtd,
-preco:total,
-obs:obs.value
-});
+  let extrasSelecionados = adicionais.filter(a=>a.qtd>0);
 
-localStorage.setItem("carrinho",JSON.stringify(carrinho));
-location.href="carrinho.html";
+  carrinho.push({
+    nome: p.nome,
+    qtd: qtd,
+    preco: p.preco,
+    adicionais: extrasSelecionados,
+    obs: document.getElementById("obs").value
+  });
+
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+  location.href = "carrinho.html";
 }
 
-function mais(){qtd++;qtdSpan()}
-function menos(){if(qtd>1)qtd--;qtdSpan()}
-
-function qtdSpan(){
-document.getElementById("qtd").innerText=qtd;
-atualizar();
-}
-
+renderExtras();
 atualizar();
 </script>
 
