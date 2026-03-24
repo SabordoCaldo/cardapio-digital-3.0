@@ -3,72 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body{font-family:Arial;padding:10px;}
-.btn{width:100%;padding:15px;background:green;color:white;border:none;}
+body{font-family:Arial;padding:15px;}
+input,select{width:100%;padding:12px;margin-top:10px;font-size:16px;}
+.btn{width:100%;padding:15px;background:#25D366;color:#fff;border:none;margin-top:10px;}
 </style>
 </head>
 
 <body>
 
-<h2>Carrinho</h2>
-
+<h2>Pedido</h2>
 <div id="lista"></div>
+<h3 id="total"></h3>
 
-<p>Total: R$ <span id="total"></span></p>
+<input id="nome" placeholder="Nome">
+<input id="end" placeholder="Endereço">
+<input id="tel" placeholder="Telefone">
 
-<input id="nome" placeholder="Nome"><br>
-<input id="end" placeholder="Endereço"><br>
-<input id="tel" placeholder="Telefone"><br>
+<select id="pag">
+<option>Forma de pagamento</option>
+<option>Dinheiro</option>
+<option>Pix</option>
+<option>Cartão</option>
+</select>
 
-<button class="btn" onclick="enviar()">Enviar WhatsApp</button>
-<button onclick="limpar()">Limpar</button>
+<input id="troco" placeholder="Troco">
+
+<button class="btn" onclick="enviar()">Enviar</button>
 
 <script>
-function render(){
 let c=JSON.parse(localStorage.getItem("carrinho"))||[];
 let lista=document.getElementById("lista");
-lista.innerHTML="";
-
 let total=0;
 
 c.forEach(i=>{
-total+=i.preco*i.qtd;
+let txt=`${i.qtd} ${i.nome}<br>`;
 
-lista.innerHTML+=`
-<p>${i.qtd} ${i.nome}<br>
-R$ ${(i.preco*i.qtd).toFixed(2).replace(".",",")}</p>
-`;
+i.adicionais.forEach(a=>{
+if(a.qtd>0) txt+=`${a.qtd} add ${a.nome}<br>`;
 });
 
-document.getElementById("total").innerText=total.toFixed(2);
-}
+let sub=i.qtd*i.preco;
+i.adicionais.forEach(a=>sub+=a.qtd*a.preco);
 
-function limpar(){
-localStorage.removeItem("carrinho");
-render();
-}
+txt+=`R$ ${sub.toFixed(2)}<br><br>`;
+
+lista.innerHTML+=txt;
+total+=sub;
+});
+
+document.getElementById("total").innerText="Total R$ "+total.toFixed(2);
 
 function enviar(){
-let c=JSON.parse(localStorage.getItem("carrinho"))||[];
-let total=0;
-let txt="Sabor do Caldo\nPedido 0001\n\n";
+if(total<20){alert("Pedido mínimo 20");return;}
+
+let msg="Sabor do Caldo\nPedido 0001\n\n";
 
 c.forEach(i=>{
-total+=i.preco*i.qtd;
-txt+=`${i.qtd} ${i.nome}\nR$ ${(i.preco*i.qtd).toFixed(2)}\n`;
+msg+=`${i.qtd} ${i.nome}\n`;
+i.adicionais.forEach(a=>{
+if(a.qtd>0) msg+=`${a.qtd} add ${a.nome}\n`;
+});
 });
 
-txt+=`\nTotal: ${total}\n\n`;
-txt+=`Nome: ${nome.value}\n`;
-txt+=`Endereço: ${end.value}\n`;
-txt+=`Telefone: ${tel.value}`;
+msg+=`\nTotal: ${total}\n\n`;
+msg+=`Nome: ${nome.value}\n`;
+msg+=`Endereço: ${end.value}\n`;
+msg+=`Telefone: ${tel.value}\n`;
+msg+=`Pagamento: ${pag.value}\n`;
+msg+=`Troco: ${troco.value}\n\n`;
+msg+="Obrigado pelo seu pedido!";
 
-window.open("https://wa.me/?text="+encodeURIComponent(txt));
+window.open("https://wa.me/5535999711358?text="+encodeURIComponent(msg));
 }
-
-render();
 </script>
 
 </body>
