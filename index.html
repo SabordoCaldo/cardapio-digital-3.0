@@ -1,60 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Sabor do Caldo</title>
-
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#d32f2f">
+<meta name="theme-color" content="#e30613">
+
+<title>Cardápio</title>
 
 <style>
 body{margin:0;font-family:Arial;background:#fff;}
 
 .header{
-  background:#d32f2f;
-  color:white;
-  padding:15px;
+background:#e30613;
+color:#fff;
+padding:15px;
 }
 
 .logo{
-  width:60px;height:60px;border-radius:50%;background:white;margin-bottom:10px;
+width:60px;height:60px;border-radius:50%;background:#fff;
 }
 
-.categorias{
-  display:flex;overflow-x:auto;gap:10px;padding:10px;
+.topo{display:flex;gap:10px;align-items:center;}
+
+.aviso{
+background:#000;
+color:#fff;
+text-align:center;
+padding:8px;
+font-weight:bold;
 }
 
-.cat{
-  padding:8px 15px;background:#eee;border-radius:20px;
+.container{padding:10px;}
+
+.titulo{
+color:#e30613;
+font-size:20px;
+margin-top:20px;
 }
 
-.cat.ativo{background:#d32f2f;color:white;}
-
-.lista{padding:10px;}
-
-.card{
-  display:flex;justify-content:space-between;
-  margin-bottom:15px;cursor:pointer;
+.item{
+display:flex;
+justify-content:space-between;
+border-bottom:1px solid #ddd;
+padding:10px 0;
+cursor:pointer;
 }
 
-.card img{
-  width:90px;height:90px;border-radius:10px;
+.item img{
+width:90px;height:90px;border-radius:10px;object-fit:cover;
 }
 
 .carrinho{
-  position:fixed;bottom:20px;right:20px;
-  width:60px;height:60px;border-radius:50%;
-  background:black;color:white;
-  display:flex;align-items:center;justify-content:center;
+position:fixed;
+bottom:20px;
+right:20px;
+background:#000;
+color:#fff;
+width:60px;height:60px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
 }
 
 .badge{
-  position:absolute;top:0;right:0;
-  background:red;color:white;font-size:12px;
-  border-radius:50%;padding:3px 6px;
+position:absolute;
+top:0;
+right:0;
+background:red;
+border-radius:50%;
+padding:4px;
+font-size:12px;
 }
 </style>
 </head>
@@ -62,75 +80,72 @@ body{margin:0;font-family:Arial;background:#fff;}
 <body>
 
 <div class="header">
-  <div class="logo"></div>
-  <h2>Sabor do Caldo</h2>
-  <p>Quinta a Domingo - 19h às 23h</p>
+<div class="topo">
+<div class="logo"></div>
+<div>
+<h2>Cardápio</h2>
+<b>Sabor do Caldo</b><br>
+CNPJ 61.986.117/0001-80<br>
+Qui a Dom - 19h às 23h
+</div>
+</div>
 </div>
 
-<div class="categorias">
-  <div class="cat ativo" onclick="trocar('promo', this)">Ofertas</div>
-  <div class="cat" onclick="trocar('caldos', this)">Caldos</div>
-  <div class="cat" onclick="trocar('bebidas', this)">Bebidas</div>
+<div class="aviso">
+Pedido mínimo R$20,00 - Entrega grátis
 </div>
 
-<div id="lista" class="lista"></div>
+<div class="container" id="lista"></div>
 
-<div class="carrinho" onclick="irCarrinho()">
+<div class="carrinho" onclick="location.href='carrinho.html'">
 🛒 <div class="badge" id="cont">0</div>
 </div>
 
+<script src="ofertas.js"></script>
 <script src="caldos.js"></script>
 <script src="bebidas.js"></script>
-<script src="promocoes.js"></script>
 
 <script>
-let categoria="promo";
-
-function trocar(cat,el){
-  categoria=cat;
-  document.querySelectorAll(".cat").forEach(c=>c.classList.remove("ativo"));
-  el.classList.add("ativo");
-  render();
+function abrir(p){
+localStorage.setItem("produtoSelecionado",JSON.stringify(p));
+location.href="produto.html";
 }
 
-function abrirProduto(item){
-  localStorage.setItem("produtoSelecionado", JSON.stringify(item));
-  location.href="produto.html";
+function render(titulo, lista){
+let html=`<div class="titulo">${titulo}</div>`;
+
+lista.forEach(p=>{
+html+=`
+<div class="item" onclick='abrir(${JSON.stringify(p)})'>
+<div>
+<b>${p.nome}</b><br>
+${p.descricao}<br>
+<b>R$ ${p.preco.toFixed(2).replace(".",",")}</b>
+</div>
+<img src="${p.imagem}">
+</div>`;
+});
+
+return html;
 }
 
-function render(){
-  let lista=document.getElementById("lista");
-  lista.innerHTML="";
+let tudo="";
+tudo+=render("Ofertas",ofertas);
+tudo+=render("Caldos",caldos);
+tudo+=render("Bebidas",bebidas);
 
-  let dados=[];
-  if(categoria==="promo") dados=promocoes;
-  if(categoria==="caldos") dados=caldos;
-  if(categoria==="bebidas") dados=bebidas;
-
-  dados.forEach(item=>{
-    lista.innerHTML+=`
-      <div class="card" onclick='abrirProduto(${JSON.stringify(item)})'>
-        <div>
-          <h3>${item.nome}</h3>
-          <p>${item.descricao}</p>
-          <strong>R$ ${item.preco.toFixed(2).replace(".",",")}</strong>
-        </div>
-        <img src="${item.imagem}">
-      </div>
-    `;
-  });
-}
+document.getElementById("lista").innerHTML=tudo;
 
 function atualizar(){
-  let c=JSON.parse(localStorage.getItem("carrinho"))||[];
-  let total=c.reduce((a,i)=>a+i.qtd,0);
-  document.getElementById("cont").innerText=total;
+let c=JSON.parse(localStorage.getItem("carrinho"))||[];
+let total=c.reduce((a,i)=>a+i.qtd,0);
+document.getElementById("cont").innerText=total;
 }
-
-function irCarrinho(){location.href="carrinho.html";}
-
-render();
 atualizar();
+
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js");
+}
 </script>
 
 </body>
